@@ -12,6 +12,7 @@ export default function index() {
       <Link href="/(home)/guides">Pdf reader</Link>
       <Link href="/(home)/home">home</Link>
       <Link href="/(home)/device">alat uji</Link>
+      <Link href="/(home)/dropdown">task dropdown</Link>
     </View>
   );
 }

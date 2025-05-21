@@ -22,18 +22,18 @@ type RegisterResponse = {
 
 // Fungsi register
 export const register = async ({
-  name,
+  username,
   email,
   password,
   image,
 }: {
-  name: string;
+  username: string;
   email: string;
   password: string;
   image?: string;
 }): Promise<RegisterResponse> => {
   const payload: any = {
-    name,
+    username,
     email,
     password,
   };

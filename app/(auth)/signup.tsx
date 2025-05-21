@@ -3,18 +3,20 @@ import { View, Text, TextInput, Pressable, Alert, ScrollView } from 'react-nativ
 import { register } from 'services/authService';
 
 export default function Register() {
-  const [name, setName] = useState('');
+  const [username, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [image, setImage] = useState('');
 
   const handleRegister = async () => {
-    const requestData = { name, email, password, image };
+    const requestData = { username, email, password, image };
     console.log('Data yang dikirim untuk register:', requestData);
+    console.log('Tombol Register ditekan');
 
     try {
-      const data = await register(requestData);
+      const response = await register(requestData);
       Alert.alert('Registrasi Berhasil', 'Akun berhasil dibuat');
+      return response;
     } catch (error: any) {
       const message =
         error.response?.data?.message === 'Email sudah terdaftar'
@@ -36,8 +38,8 @@ export default function Register() {
         <TextInput
           placeholder="Enter your name"
           className="mb-4 rounded-lg border border-gray-300 px-3 py-2"
-          value={name}
-          onChangeText={setName}
+          value={username}
+          onChangeText={setUserName}
         />
 
         <Text className="mb-1 text-sm text-gray-600">Email</Text>
