@@ -30,7 +30,7 @@ export default function Login() {
         <Text className="mb-1 text-sm text-gray-600">Email</Text>
         <TextInput
           placeholder="Email"
-          className="mb-4 rounded-lg border border-gray-300 px-3 py-2"
+          className="mb-4 rounded-lg border border-blue-600 px-3 py-2"
           keyboardType="email-address"
           value={name}
           onChangeText={setName}

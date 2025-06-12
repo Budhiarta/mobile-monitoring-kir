@@ -13,6 +13,7 @@ export default function index() {
       <Link href="/(home)/home">home</Link>
       <Link href="/(home)/device">alat uji</Link>
       <Link href="/(home)/dropdown">task dropdown</Link>
+      <Link href="/(home)/calendar">calendar</Link>
     </View>
   );
 }

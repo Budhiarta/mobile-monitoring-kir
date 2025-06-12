@@ -8,6 +8,7 @@ import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import ImagePickerInput from 'components/ImagePicker';
 import SignatureInput from 'components/SignatureInput';
 import { submitMonitoringData } from 'services/monitoring';
+import MonitoringScreen from 'components/MonitoringTypeSelector';
 
 export default function Testing() {
   const [tester, setTester] = useState('');
@@ -49,12 +50,9 @@ export default function Testing() {
     console.log('date:', date);
   };
 
-  const [monitoringType, setMonitoringType] = useState<number | undefined>(undefined);
-  const monitoringTypeData = [
-    { label: 'Harian', value: '1' },
-    { label: 'Mingguan', value: '2' },
-    { label: 'Bulanan', value: '3' },
-  ];
+  type MonitoringType = 'harian' | 'mingguan' | 'bulanan';
+
+  const [monitoringType, setMonitoringType] = useState<MonitoringType>('harian');
 
   const [status, setStatus] = useState<string>('true');
   const statusData = [
@@ -108,12 +106,13 @@ export default function Testing() {
             />
 
             <Text>Jenis Pengujian</Text>
-            <Dropdown
-              label={'jenis monitoring'}
-              options={monitoringTypeData}
-              placeholder="pilih jenis monitoring"
-              value={monitoringType?.toString()}
-              onSelect={(value) => setMonitoringType(value ? parseInt(value) : undefined)}
+            <MonitoringScreen
+              monitoringType={monitoringType}
+              onMonitoringTypeChange={(type) => setMonitoringType(type)}
+              tasks={[]}
+              setTasks={function (tasks: { id: number; name: string; isChecked: boolean }[]): void {
+                throw new Error('Function not implemented.');
+              }}
             />
 
             <Text className="mb-1 mt-4 text-sm text-gray-600">Tanggal Pengujian</Text>
@@ -160,7 +159,7 @@ export default function Testing() {
             <SignatureInput
               label="Paraf"
               onSigned={(base64) => {
-                setSignature(base64); // ← simpan tanda tangan ke state
+                setSignature(base64);
               }}
               onScrollToggle={(enabled) => setScrollEnabled(enabled)}
             />
