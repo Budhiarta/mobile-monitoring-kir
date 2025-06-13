@@ -24,14 +24,17 @@ const MonitoringScreen = ({ monitoringType, onMonitoringTypeChange }: Monitoring
   useEffect(() => {
     const dummyTasks: Record<MonitoringType, Task[]> = {
       harian: [
-        { id: 1, name: 'Cek suhu', isChecked: false },
-        { id: 2, name: 'Periksa air', isChecked: false },
+        { id: 1, name: 'Bersihkan bagian dari alat uji co-he tester', isChecked: false },
+        { id: 2, name: 'Bersihkan filter dengaan angin kompresor', isChecked: false },
+        { id: 3, name: 'Bersihkan probe dengan angin kompresor', isChecked: false },
+        { id: 4, name: 'Periksalah kabel listrik', isChecked: false },
+        { id: 5, name: 'Bersihkan selang probe dengan angin  kompresor', isChecked: false },
+        { id: 6, name: 'Periksa kondisi tinta dan kertas print', isChecked: false },
       ],
-      mingguan: [
-        { id: 3, name: 'Bersihkan filter', isChecked: false },
-        { id: 4, name: 'Kalibrasi alat', isChecked: false },
+      mingguan: [{ id: 7, name: 'Bersihkan dengan angin kompresor', isChecked: false }],
+      bulanan: [
+        { id: 8, name: 'Ganti filter bila sudah tidak bisa dibersihkan', isChecked: false },
       ],
-      bulanan: [{ id: 5, name: 'Perawatan sistem', isChecked: false }],
     };
 
     setTasks(dummyTasks[monitoringType]);
