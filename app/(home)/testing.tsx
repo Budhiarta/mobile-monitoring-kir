@@ -1,14 +1,13 @@
-import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useRef, useState } from 'react';
-import SignatureScreen from 'react-native-signature-canvas';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { useState } from 'react';
 import { Dropdown } from 'react-native-paper-dropdown';
 import { Provider as PaperProvider } from 'react-native-paper';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import ImagePickerInput from 'components/ImagePicker';
 import SignatureInput from 'components/SignatureInput';
 import { submitMonitoringData } from 'services/monitoring';
-import MonitoringScreen from 'components/MonitoringTypeSelector';
+
+type MonitoringType = 1 | 2 | 3;
 
 export default function Testing() {
   const [tester, setTester] = useState('');
@@ -17,21 +16,46 @@ export default function Testing() {
   const [signature, setSignature] = useState('');
   const [imageUri, setImageUri] = useState('');
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [monitoringType, setMonitoringType] = useState<MonitoringType>(1);
+  const [status, setStatus] = useState<string>('true');
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+
+  const statusData = [
+    { label: 'baik', value: 'true' },
+    { label: 'rusak', value: 'false' },
+  ];
+
+  const toggleDatePicker = () => setShowPicker(!showPicker);
+
+  const onPickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (event.type === 'set' && selectedDate) {
+      setDate(selectedDate);
+    }
+    setShowPicker(false);
+  };
+
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
   const handleSubmit = async () => {
-    if (!tester || !signature) {
-      return Alert.alert('Validasi', 'Nama penguji dan tanda tangan wajib diisi');
+    if (!tester || !signature || !deviceName) {
+      return Alert.alert('Validasi', 'Nama penguji, alat, dan tanda tangan wajib diisi');
     }
 
     try {
       const payload = {
         Tester: tester,
-        deviceName: 'Gas Analyzer',
+        deviceName: deviceName,
         MonitoringType: monitoringType,
         Documentation: imageUri,
         Status: status === 'true',
         Sumary: notes,
-        Signature: signature, // ← pastikan ini isinya bukan ""
+        Signature: signature,
         Date: date.toISOString(),
       };
 
@@ -41,45 +65,6 @@ export default function Testing() {
     } catch (error: any) {
       Alert.alert('Gagal', error.message);
     }
-
-    console.log('Tester:', tester);
-    console.log('monitoring tipe:', monitoringType);
-    console.log('docum:', imageUri);
-    console.log('status:', status);
-    console.log('sumari:', notes);
-    console.log('date:', date);
-  };
-
-  type MonitoringType = 'harian' | 'mingguan' | 'bulanan';
-
-  const [monitoringType, setMonitoringType] = useState<MonitoringType>('harian');
-
-  const [status, setStatus] = useState<string>('true');
-  const statusData = [
-    { label: 'baik', value: 'true' },
-    { label: 'rusak', value: 'false' },
-  ];
-
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
-
-  const toggleDatePicker = () => {
-    setShowPicker(!showPicker);
-  };
-
-  const onPickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (event.type === 'set' && selectedDate) {
-      setDate(selectedDate);
-    }
-    setShowPicker(false);
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
   };
 
   return (
@@ -96,7 +81,7 @@ export default function Testing() {
           <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg">
             <Text className="mb-6 text-center text-2xl font-bold text-gray-800">Gas Energizer</Text>
 
-            {/* TextInput */}
+            {/* Nama Penguji */}
             <Text className="mb-1 text-sm text-gray-600">Nama Penguji</Text>
             <TextInput
               value={tester}
@@ -105,16 +90,16 @@ export default function Testing() {
               className="mb-4 rounded-lg border border-gray-300 px-3 py-2"
             />
 
-            <Text>Jenis Pengujian</Text>
-            <MonitoringScreen
-              monitoringType={monitoringType}
-              onMonitoringTypeChange={(type) => setMonitoringType(type)}
-              tasks={[]}
-              setTasks={function (tasks: { id: number; name: string; isChecked: boolean }[]): void {
-                throw new Error('Function not implemented.');
-              }}
+            {/* Nama Alat / Device */}
+            <Text className="mb-1 text-sm text-gray-600">Nama Alat</Text>
+            <TextInput
+              value={deviceName}
+              onChangeText={setDeviceName}
+              placeholder="masukkan nama alat"
+              className="mb-4 rounded-lg border border-gray-300 px-3 py-2"
             />
 
+            {/* Tanggal Pengujian */}
             <Text className="mb-1 mt-4 text-sm text-gray-600">Tanggal Pengujian</Text>
             <TouchableOpacity onPress={toggleDatePicker}>
               <View className="rounded-lg border border-gray-300 bg-white px-3 py-2">
@@ -131,14 +116,13 @@ export default function Testing() {
               />
             )}
 
-            <ImagePickerInput
-              label="Dokumentasi"
-              onImageSelected={(uri) => console.log('Gambar dipilih:', uri)}
-            />
+            {/* Dokumentasi */}
+            <ImagePickerInput label="Dokumentasi" onImageSelected={(uri) => setImageUri(uri)} />
 
+            {/* Status Monitoring */}
             <Text className="mb-1 text-sm text-gray-600">Status Alat</Text>
             <Dropdown
-              label={'Status monitoring'}
+              label="Status monitoring"
               options={statusData}
               placeholder="pilih status monitoring"
               value={status}
@@ -147,6 +131,7 @@ export default function Testing() {
               }}
             />
 
+            {/* Catatan */}
             <Text className="mb-1 text-sm text-gray-600">Catatan</Text>
             <TextInput
               value={notes}
@@ -156,11 +141,10 @@ export default function Testing() {
               multiline
             />
 
+            {/* Tanda Tangan */}
             <SignatureInput
               label="Paraf"
-              onSigned={(base64) => {
-                setSignature(base64);
-              }}
+              onSigned={(base64) => setSignature(base64)}
               onScrollToggle={(enabled) => setScrollEnabled(enabled)}
             />
           </View>

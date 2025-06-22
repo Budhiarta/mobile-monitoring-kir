@@ -14,6 +14,8 @@ export default function index() {
       <Link href="/(home)/device">alat uji</Link>
       <Link href="/(home)/dropdown">task dropdown</Link>
       <Link href="/(home)/calendar">calendar</Link>
+      <Link href="/(home)/CreateMonitoring">monitoring</Link>
+      <Link href="/(home)/TypeSelection">selec tipe</Link>
     </View>
   );
 }
