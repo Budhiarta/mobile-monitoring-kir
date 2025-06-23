@@ -16,6 +16,9 @@ export default function index() {
       <Link href="/(home)/calendar">calendar</Link>
       <Link href="/(home)/CreateMonitoring">monitoring</Link>
       <Link href="/(home)/TypeSelection">selec tipe</Link>
+      <Link href="/(home)/alatuji">device</Link>
+      <Link href="/(home)/report">report</Link>
+      <Link href="/(home)/sparePart">cadangan</Link>
     </View>
   );
 }
