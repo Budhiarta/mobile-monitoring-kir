@@ -19,6 +19,7 @@ export default function index() {
       <Link href="/(home)/alatuji">device</Link>
       <Link href="/(home)/report">report</Link>
       <Link href="/(home)/sparePart">cadangan</Link>
+      <Link href="/(home)/ReportListScreen">list report</Link>
     </View>
   );
 }

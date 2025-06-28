@@ -5,26 +5,19 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import ImagePickerInput from 'components/ImagePicker';
 import SignatureInput from 'components/SignatureInput';
-import { submitMonitoringData } from 'services/monitoring';
+import { submitReportData } from 'services/reportService';
 
 type MonitoringType = 1 | 2 | 3;
 
-export default function Testing() {
+export default function Report() {
   const [tester, setTester] = useState('');
   const [deviceName, setDeviceName] = useState('');
   const [notes, setNotes] = useState('');
   const [signature, setSignature] = useState('');
   const [imageUri, setImageUri] = useState('');
   const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [monitoringType, setMonitoringType] = useState<MonitoringType>(1);
-  const [status, setStatus] = useState<string>('true');
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
-
-  const statusData = [
-    { label: 'baik', value: 'true' },
-    { label: 'rusak', value: 'false' },
-  ];
 
   const toggleDatePicker = () => setShowPicker(!showPicker);
 
@@ -49,21 +42,19 @@ export default function Testing() {
 
     try {
       const payload = {
-        Tester: tester,
-        deviceName: deviceName,
-        MonitoringType: monitoringType,
-        Documentation: imageUri,
-        Status: status === 'true',
-        Sumary: notes,
+        tester,
+        date: date.toISOString(),
+        devicename: deviceName,
+        Documentation: imageUri || 'Tidak ada dokumentasi',
         Signature: signature,
-        Date: date.toISOString(),
       };
 
-      const response = await submitMonitoringData(payload);
-      Alert.alert('Sukses', 'Data monitoring berhasil dikirim!');
+      const response = await submitReportData(payload);
+      Alert.alert('Sukses', 'Laporan berhasil dikirim!');
       console.log(response);
     } catch (error: any) {
       Alert.alert('Gagal', error.message);
+      console.error(error);
     }
   };
 

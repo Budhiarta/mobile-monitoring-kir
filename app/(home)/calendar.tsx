@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { Calendar, Agenda } from 'react-native-calendars';
-import { ScrollView } from 'react-native-gesture-handler';
-import taskService, { AgendaItem, AgendaItems } from '../../services/taskService';
+import { AgendaItem, AgendaItems } from '../../services/taskService';
+import taskService from '../../services/taskService';
 
 const CalendarScreen: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -11,32 +11,57 @@ const CalendarScreen: React.FC = () => {
   const handleDayPress = async (day: { dateString: string }) => {
     const date = day.dateString;
 
-    const checkedTasks = await taskService.getCheckedTaskByDate(date);
-
-    setItems((prev) => ({ ...prev, ...checkedTasks }));
-    setSelectedDate(date);
+    try {
+      const checkedTasks = await taskService.getCheckedTaskByDate(date);
+      setItems((prev) => ({ ...prev, ...checkedTasks }));
+      setSelectedDate(date);
+    } catch (err) {
+      console.error('❌ Error fetching agenda:', err);
+    }
   };
 
   const renderItem = (item: AgendaItem, date: string) => {
-    const itemKey = `${item.id}|${date}`;
-
     return (
       <View
-        key={itemKey}
-        className="mb-2 overflow-hidden rounded-xl border border-gray-200 bg-white"
-        style={{ minHeight: item.height || 80 }}>
-        <View className="rounded-t-xl bg-blue-100 p-4">
-          <Text className="font-bold text-blue-800">Nama Penguji: {item.tester}</Text>
-          <Text className="text-blue-800">alat uji: {item.device}</Text>
+        key={`${item.id}|${date}`}
+        className="mb-5 rounded-2xl border border-gray-300 bg-white p-4 shadow-sm">
+        {/* Header */}
+        <View className="mb-3 border-b border-gray-200 pb-2">
+          <Text className="text-base font-semibold text-blue-800">
+            Penguji: <Text className="font-normal">{item.tester}</Text>
+          </Text>
+          <Text className="text-sm text-gray-700">Alat Uji: {item.device}</Text>
         </View>
 
-        <View className="bg-gray-50 px-4 py-2">
-          {item.details.map((detail, index) => (
-            <Text key={`${item.id}-detail-${index}`} className="mb-1 text-sm text-gray-700">
-              - {detail}
+        {/* Task Detail */}
+        <View className="mb-3">
+          {item.details?.map((detail, index) => (
+            <Text key={`${item.id}-detail-${index}`} className="text-sm text-gray-800">
+              • {detail}
             </Text>
           ))}
         </View>
+
+        {/* Dokumentasi */}
+        {item.documentation ? (
+          <Image
+            source={{ uri: item.documentation }}
+            className="mb-3 h-48 w-full rounded-lg border border-gray-300 bg-gray-100"
+            resizeMode="cover"
+          />
+        ) : null}
+
+        {/* Signature */}
+        {item.signature ? (
+          <View>
+            <Text className="mb-1 text-sm text-gray-500">Tanda Tangan:</Text>
+            <Image
+              source={{ uri: item.signature }}
+              className="h-40 w-full rounded-lg border border-gray-300 bg-white"
+              resizeMode="contain"
+            />
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -62,7 +87,7 @@ const CalendarScreen: React.FC = () => {
             renderItem={(item: AgendaItem) => renderItem(item, selectedDate)}
             renderEmptyDate={() => (
               <View className="p-4">
-                <Text className="text-gray-400">Tidak ada agenda hari ini</Text>
+                <Text className="text-gray-400">Tidak ada agenda hari ini.</Text>
               </View>
             )}
             onDayPress={handleDayPress}
@@ -75,8 +100,8 @@ const CalendarScreen: React.FC = () => {
           />
 
           <TouchableOpacity
-            className="mx-4 my-2 items-center rounded-lg bg-gray-200 py-3"
-            onPress={() => setSelectedDate(null)}>
+            onPress={() => setSelectedDate(null)}
+            className="mx-4 my-2 items-center rounded-lg bg-gray-200 py-3">
             <Text className="text-gray-800">← Kembali ke Kalender</Text>
           </TouchableOpacity>
         </>
