@@ -4,6 +4,7 @@ export type AgendaItem = {
   id: string;
   tester: string;
   device: string;
+  documentation: string;
   details: string[];
   tasks: string[];
   height?: number;
@@ -29,6 +30,7 @@ const taskService = {
           id: key,
           tester: item.monitoring.Tester,
           device: item.task.device.devicename,
+          documentation: item.monitoring.documentation,
           details: [item.task.activity],
           tasks: [item.task.activity], // ✅ ubah ke string
         };

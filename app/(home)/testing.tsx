@@ -1,17 +1,22 @@
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Dropdown } from 'react-native-paper-dropdown';
 import { Provider as PaperProvider } from 'react-native-paper';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import ImagePickerInput from 'components/ImagePicker';
 import SignatureInput from 'components/SignatureInput';
 import { submitMonitoringData } from 'services/monitoring';
+import api from 'services/api';
 
 type MonitoringType = 1 | 2 | 3;
 
 export default function Testing() {
+  const { deviceId } = useLocalSearchParams();
+  console.log('Device ID:', deviceId);
+  const router = useRouter();
+
   const [tester, setTester] = useState('');
-  const [deviceName, setDeviceName] = useState('');
   const [notes, setNotes] = useState('');
   const [signature, setSignature] = useState('');
   const [imageUri, setImageUri] = useState('');
@@ -43,14 +48,14 @@ export default function Testing() {
     });
 
   const handleSubmit = async () => {
-    if (!tester || !signature || !deviceName) {
-      return Alert.alert('Validasi', 'Nama penguji, alat, dan tanda tangan wajib diisi');
+    if (!tester || !signature || !deviceId) {
+      return Alert.alert('Validasi', 'Nama penguji, deviceId, dan tanda tangan wajib diisi');
     }
 
     try {
       const payload = {
         Tester: tester,
-        deviceName: deviceName,
+        DeviceId: parseInt(deviceId as string),
         MonitoringType: monitoringType,
         Documentation: imageUri,
         Status: status === 'true',
@@ -59,11 +64,22 @@ export default function Testing() {
         Date: date.toISOString(),
       };
 
-      const response = await submitMonitoringData(payload);
+      const monitoringRes = await api.post('/monitoring', payload);
+      const monitoringId = monitoringRes.data.id;
+
       Alert.alert('Sukses', 'Data monitoring berhasil dikirim!');
-      console.log(response);
+
+      // Arahkan ke dropdown dengan deviceId dan monitoringId
+      router.push({
+        pathname: '/(home)/dropdown',
+        params: {
+          deviceId: deviceId.toString(),
+          monitoringId: monitoringId.toString(),
+        },
+      });
     } catch (error: any) {
-      Alert.alert('Gagal', error.message);
+      console.error(error);
+      Alert.alert('Gagal', error.message || 'Terjadi kesalahan');
     }
   };
 
@@ -79,7 +95,9 @@ export default function Testing() {
             paddingVertical: 20,
           }}>
           <View className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg">
-            <Text className="mb-6 text-center text-2xl font-bold text-gray-800">Gas Energizer</Text>
+            <Text className="mb-6 text-center text-2xl font-bold text-gray-800">
+              Monitoring Alat Uji
+            </Text>
 
             {/* Nama Penguji */}
             <Text className="mb-1 text-sm text-gray-600">Nama Penguji</Text>
@@ -90,13 +108,12 @@ export default function Testing() {
               className="mb-4 rounded-lg border border-gray-300 px-3 py-2"
             />
 
-            {/* Nama Alat / Device */}
-            <Text className="mb-1 text-sm text-gray-600">Nama Alat</Text>
+            {/* ID Alat */}
+            <Text className="mb-1 text-sm text-gray-600">ID Device</Text>
             <TextInput
-              value={deviceName}
-              onChangeText={setDeviceName}
-              placeholder="masukkan nama alat"
-              className="mb-4 rounded-lg border border-gray-300 px-3 py-2"
+              value={deviceId?.toString()}
+              editable={false}
+              className="mb-4 rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-gray-500"
             />
 
             {/* Tanggal Pengujian */}
@@ -119,7 +136,7 @@ export default function Testing() {
             {/* Dokumentasi */}
             <ImagePickerInput label="Dokumentasi" onImageSelected={(uri) => setImageUri(uri)} />
 
-            {/* Status Monitoring */}
+            {/* Status */}
             <Text className="mb-1 text-sm text-gray-600">Status Alat</Text>
             <Dropdown
               label="Status monitoring"
