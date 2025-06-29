@@ -1,19 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Dropdown } from 'react-native-paper-dropdown';
 import { Provider as PaperProvider } from 'react-native-paper';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { Dropdown } from 'react-native-paper-dropdown';
+import { format } from 'date-fns';
+
 import ImagePickerInput from 'components/ImagePicker';
 import SignatureInput from 'components/SignatureInput';
-import { submitMonitoringData } from 'services/monitoring';
 import api from 'services/api';
 
 type MonitoringType = 1 | 2 | 3;
+type StatusValue = 'true' | 'false';
+
+const statusOptions = [
+  { label: 'baik', value: 'true' },
+  { label: 'rusak', value: 'false' },
+];
 
 export default function Testing() {
-  const { deviceId } = useLocalSearchParams();
-  console.log('Device ID:', deviceId);
+  const { deviceId } = useLocalSearchParams<{ deviceId: string }>();
   const router = useRouter();
 
   const [tester, setTester] = useState('');
@@ -22,54 +28,47 @@ export default function Testing() {
   const [imageUri, setImageUri] = useState('');
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [monitoringType, setMonitoringType] = useState<MonitoringType>(1);
-  const [status, setStatus] = useState<string>('true');
+  const [status, setStatus] = useState<StatusValue>('true');
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
 
-  const statusData = [
-    { label: 'baik', value: 'true' },
-    { label: 'rusak', value: 'false' },
-  ];
+  const toggleDatePicker = () => setShowPicker((prev) => !prev);
 
-  const toggleDatePicker = () => setShowPicker(!showPicker);
-
-  const onPickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (event.type === 'set' && selectedDate) {
+  const onPickerChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (selectedDate) {
+      console.log('📆 Tanggal Dipilih (Local):', selectedDate.toString());
       setDate(selectedDate);
     }
     setShowPicker(false);
   };
 
-  const formatDate = (date: Date) =>
-    date.toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  const formatDisplayDate = (date: Date) =>
+    date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
   const handleSubmit = async () => {
     if (!tester || !signature || !deviceId) {
       return Alert.alert('Validasi', 'Nama penguji, deviceId, dan tanda tangan wajib diisi');
     }
 
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    console.log('📤 Tanggal Dikirim (yyyy-MM-dd):', formattedDate);
+
     try {
       const payload = {
         Tester: tester,
-        DeviceId: parseInt(deviceId as string),
+        DeviceId: parseInt(deviceId),
         MonitoringType: monitoringType,
         Documentation: imageUri,
         Status: status === 'true',
         Sumary: notes,
         Signature: signature,
-        Date: date.toISOString(),
+        Date: formattedDate, // <- Kirim hanya yyyy-MM-dd
       };
 
-      const monitoringRes = await api.post('/monitoring', payload);
-      const monitoringId = monitoringRes.data.id;
+      const response = await api.post('/monitoring', payload);
+      const monitoringId = response.data.id;
 
       Alert.alert('Sukses', 'Data monitoring berhasil dikirim!');
-
-      // Arahkan ke dropdown dengan deviceId dan monitoringId
       router.push({
         pathname: '/(home)/dropdown',
         params: {
@@ -78,8 +77,8 @@ export default function Testing() {
         },
       });
     } catch (error: any) {
-      console.error(error);
-      Alert.alert('Gagal', error.message || 'Terjadi kesalahan');
+      console.error('❌ Gagal Submit:', error.response?.data || error);
+      Alert.alert('Gagal', error.message || 'Terjadi kesalahan saat mengirim data');
     }
   };
 
@@ -99,28 +98,25 @@ export default function Testing() {
               Monitoring Alat Uji
             </Text>
 
-            {/* Nama Penguji */}
             <Text className="mb-1 text-sm text-gray-600">Nama Penguji</Text>
             <TextInput
               value={tester}
               onChangeText={setTester}
-              placeholder="masukkan nama penguji"
+              placeholder="Masukkan nama penguji"
               className="mb-4 rounded-lg border border-gray-300 px-3 py-2"
             />
 
-            {/* ID Alat */}
             <Text className="mb-1 text-sm text-gray-600">ID Device</Text>
             <TextInput
-              value={deviceId?.toString()}
+              value={deviceId}
               editable={false}
               className="mb-4 rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-gray-500"
             />
 
-            {/* Tanggal Pengujian */}
             <Text className="mb-1 mt-4 text-sm text-gray-600">Tanggal Pengujian</Text>
             <TouchableOpacity onPress={toggleDatePicker}>
               <View className="rounded-lg border border-gray-300 bg-white px-3 py-2">
-                <Text>{formatDate(date)}</Text>
+                <Text>{formatDisplayDate(date)}</Text>
               </View>
             </TouchableOpacity>
 
@@ -133,36 +129,33 @@ export default function Testing() {
               />
             )}
 
-            {/* Dokumentasi */}
-            <ImagePickerInput label="Dokumentasi" onImageSelected={(uri) => setImageUri(uri)} />
+            <ImagePickerInput label="Dokumentasi" onImageSelected={setImageUri} />
 
-            {/* Status */}
             <Text className="mb-1 text-sm text-gray-600">Status Alat</Text>
             <Dropdown
               label="Status monitoring"
-              options={statusData}
-              placeholder="pilih status monitoring"
+              options={statusOptions}
               value={status}
               onSelect={(value) => {
-                if (value !== undefined) setStatus(value);
+                if (value === 'true' || value === 'false') {
+                  setStatus(value);
+                }
               }}
             />
 
-            {/* Catatan */}
             <Text className="mb-1 text-sm text-gray-600">Catatan</Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
-              placeholder="masukkan catatan"
-              className="mb-6 min-h-[100px] rounded-lg border border-gray-300 px-3 py-2 align-top"
+              placeholder="Masukkan catatan"
               multiline
+              className="mb-6 min-h-[100px] rounded-lg border border-gray-300 px-3 py-2 align-top"
             />
 
-            {/* Tanda Tangan */}
             <SignatureInput
               label="Paraf"
-              onSigned={(base64) => setSignature(base64)}
-              onScrollToggle={(enabled) => setScrollEnabled(enabled)}
+              onSigned={setSignature}
+              onScrollToggle={setScrollEnabled}
             />
           </View>
         </ScrollView>

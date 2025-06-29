@@ -38,7 +38,7 @@ const CalendarScreen: React.FC = () => {
         <Text className="text-sm text-gray-700">Alat Uji: {item.device}</Text>
       </View>
 
-      {/* Detail Task */}
+      {/* Task Detail */}
       <View className="mb-3">
         {item.details?.map((detail, index) => (
           <Text key={`${item.id}-detail-${index}`} className="text-sm text-gray-800">
@@ -46,6 +46,14 @@ const CalendarScreen: React.FC = () => {
           </Text>
         ))}
       </View>
+
+      {/* Sumary */}
+      {item.sumary ? (
+        <View className="mb-3">
+          <Text className="mb-1 text-sm text-gray-500">Ringkasan:</Text>
+          <Text className="text-sm text-gray-700">{item.sumary}</Text>
+        </View>
+      ) : null}
 
       {/* Dokumentasi */}
       {item.documentation ? (
