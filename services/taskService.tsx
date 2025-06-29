@@ -8,6 +8,7 @@ export type AgendaItem = {
   signature: string;
   details: string[];
   tasks: string[];
+  sumary: string; // ✅ Tambahan: ringkasan hasil monitoring
   height?: number;
 };
 
@@ -22,15 +23,23 @@ const taskService = {
 
       const rawData = response.data;
 
-      // Validasi tipe response
       if (!rawData || typeof rawData !== 'object') {
         throw new Error('Data dari server tidak valid');
       }
 
-      // Jika data untuk tanggal tertentu tidak ditemukan, kembalikan kosong
-      return {
-        [date]: rawData[date] || [],
-      };
+      // Pastikan data yang dikembalikan sesuai struktur AgendaItem[]
+      const items: AgendaItem[] = (rawData[date] || []).map((item: any) => ({
+        id: item.id,
+        tester: item.tester,
+        device: item.device,
+        documentation: item.documentation,
+        signature: item.signature,
+        details: item.details || [],
+        tasks: item.tasks || [],
+        sumary: item.sumary || '', // ✅ Ambil sumary jika ada
+      }));
+
+      return { [date]: items };
     } catch (error: any) {
       console.error('❌ Gagal fetch agenda dari API:', error);
       throw new Error(error?.message || 'Gagal mengambil data agenda');

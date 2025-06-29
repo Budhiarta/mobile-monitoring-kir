@@ -42,6 +42,14 @@ const CalendarScreen: React.FC = () => {
           ))}
         </View>
 
+        {/* Sumary */}
+        {item.sumary ? (
+          <View className="mb-3">
+            <Text className="mb-1 text-sm text-gray-500">Ringkasan:</Text>
+            <Text className="text-sm text-gray-700">{item.sumary}</Text>
+          </View>
+        ) : null}
+
         {/* Dokumentasi */}
         {item.documentation ? (
           <Image
