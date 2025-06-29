@@ -1,13 +1,18 @@
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useState } from 'react';
-import { Dropdown } from 'react-native-paper-dropdown';
 import { Provider as PaperProvider } from 'react-native-paper';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import ImagePickerInput from 'components/ImagePicker';
 import SignatureInput from 'components/SignatureInput';
 import { submitReportData } from 'services/reportService';
 
-type MonitoringType = 1 | 2 | 3;
+type ReportPayload = {
+  tester: string;
+  date: string;
+  deviceName: string;
+  Documentation: string;
+  signature: string;
+};
 
 export default function Report() {
   const [tester, setTester] = useState('');
@@ -36,25 +41,34 @@ export default function Report() {
     });
 
   const handleSubmit = async () => {
+    // Validasi wajib isi
     if (!tester || !signature || !deviceName) {
       return Alert.alert('Validasi', 'Nama penguji, alat, dan tanda tangan wajib diisi');
     }
 
-    try {
-      const payload = {
-        tester,
-        date: date.toISOString(),
-        devicename: deviceName,
-        Documentation: imageUri || 'Tidak ada dokumentasi',
-        Signature: signature,
-      };
+    // Konversi sementara dari nama device ke ID
+    const deviceId = 1; // TODO: ganti sesuai pilihan user (misalnya dropdown device)
 
+    // Siapkan payload sesuai schema Prisma
+    const payload = {
+      tester,
+      Date: date.toISOString(), // Sesuai Prisma schema: field = `Date` (capital D)
+      deviceId,
+      Documentation: imageUri || 'Tidak ada dokumentasi',
+      Signature: signature || 'Tanda tangan kosong', // Hindari undefined
+    };
+
+    try {
+      console.log('Payload dikirim:', payload);
       const response = await submitReportData(payload);
+
       Alert.alert('Sukses', 'Laporan berhasil dikirim!');
-      console.log(response);
+      console.log('Respon backend:', response);
     } catch (error: any) {
-      Alert.alert('Gagal', error.message);
-      console.error(error);
+      const errorMsg =
+        error.response?.data?.message || error.message || 'Terjadi kesalahan saat submit';
+      console.error('Gagal submit:', error.response?.data || error);
+      Alert.alert('Gagal', errorMsg);
     }
   };
 
@@ -110,7 +124,7 @@ export default function Report() {
             />
 
             {/* Dokumentasi */}
-            <ImagePickerInput label="Dokumentasi" onImageSelected={(uri) => setImageUri(uri)} />
+            <ImagePickerInput label="Dokumentasi" onImageSelected={setImageUri} />
 
             {/* Catatan */}
             <Text className="mb-1 text-sm text-gray-600">Catatan</Text>
@@ -125,8 +139,8 @@ export default function Report() {
             {/* Tanda Tangan */}
             <SignatureInput
               label="Paraf"
-              onSigned={(base64) => setSignature(base64)}
-              onScrollToggle={(enabled) => setScrollEnabled(enabled)}
+              onSigned={setSignature}
+              onScrollToggle={setScrollEnabled}
             />
           </View>
         </ScrollView>

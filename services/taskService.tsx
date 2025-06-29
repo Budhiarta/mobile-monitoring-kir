@@ -15,16 +15,26 @@ export type AgendaItems = Record<string, AgendaItem[]>;
 
 const taskService = {
   getCheckedTaskByDate: async (date: string): Promise<AgendaItems> => {
-    const response = await api.get('/task/checkedBydate', {
-      params: { date },
-    });
+    try {
+      const response = await api.get('/task/checkedBydate', {
+        params: { date },
+      });
 
-    const rawData = response.data;
+      const rawData = response.data;
 
-    if (!rawData || typeof rawData !== 'object') {
-      throw new Error('Data dari server tidak valid');
+      // Validasi tipe response
+      if (!rawData || typeof rawData !== 'object') {
+        throw new Error('Data dari server tidak valid');
+      }
+
+      // Jika data untuk tanggal tertentu tidak ditemukan, kembalikan kosong
+      return {
+        [date]: rawData[date] || [],
+      };
+    } catch (error: any) {
+      console.error('❌ Gagal fetch agenda dari API:', error);
+      throw new Error(error?.message || 'Gagal mengambil data agenda');
     }
-    return rawData;
   },
 };
 
