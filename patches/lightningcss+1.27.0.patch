@@ -1,0 +1,59 @@
+diff --git a/node_modules/lightningcss/node/index.js b/node_modules/lightningcss/node/index.js
+index a9f2f6d..10ba27c 100644
+--- a/node_modules/lightningcss/node/index.js
++++ b/node_modules/lightningcss/node/index.js
+@@ -1,24 +1,44 @@
++const path = require('path');
++
+ let parts = [process.platform, process.arch];
++
+ if (process.platform === 'linux') {
+-  const { MUSL, family } = require('detect-libc');
+-  if (family === MUSL) {
+-    parts.push('musl');
+-  } else if (process.arch === 'arm') {
+-    parts.push('gnueabihf');
+-  } else {
++  try {
++    const { MUSL, family } = require('detect-libc');
++    if (family === MUSL) {
++      parts.push('musl');
++    } else if (process.arch === 'arm') {
++      parts.push('gnueabihf');
++    } else {
++      parts.push('gnu');
++    }
++  } catch (e) {
++    console.warn('[lightningcss] Failed to detect libc family, assuming gnu.');
+     parts.push('gnu');
+   }
+ } else if (process.platform === 'win32') {
+   parts.push('msvc');
+ }
+ 
++const binaryName = `lightningcss-${parts.join('-')}`;
++const fallbackBinary = `../lightningcss.${parts.join('-')}.node`;
++
+ if (process.env.CSS_TRANSFORMER_WASM) {
+-  module.exports = require(`../pkg`);
++  module.exports = require('../pkg');
+ } else {
++  let loaded = false;
+   try {
+-    module.exports = require(`lightningcss-${parts.join('-')}`);
+-  } catch (err) {
+-    module.exports = require(`../lightningcss.${parts.join('-')}.node`);
++    module.exports = require(binaryName);
++    loaded = true;
++  } catch (err1) {
++    try {
++      module.exports = require(fallbackBinary);
++      loaded = true;
++    } catch (err2) {
++      throw new Error(
++        `[lightningcss] Failed to load native module.\nTried:\n  - ${binaryName}\n  - ${fallbackBinary}\n\nOriginal errors:\n${err1.message}\n${err2.message}`
++      );
++    }
+   }
+ }
+ 

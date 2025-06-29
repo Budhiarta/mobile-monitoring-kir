@@ -19,7 +19,7 @@ const Home = () => {
         />
 
         {/* Title tengah */}
-        <Text className="flex-1 text-center text-xl font-bold text-white">SIMANTRA</Text>
+        <Text className="flex-1 text-center text-xl font-bold text-white">SIMATRA</Text>
 
         {/* Logo kanan */}
         <Image
@@ -29,7 +29,7 @@ const Home = () => {
         />
       </View>
 
-      <View className="flex h-full items-center justify-center bg-white">
+      <View className="flex h-full items-center justify-center bg-white ">
         <View className="flex-row space-x-10 p-4 pb-20">
           <Link href="/testing" asChild>
             <TouchableOpacity className="mr-7 rounded-2xl bg-blue-400 p-5">
