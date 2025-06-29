@@ -1,10 +1,12 @@
-const { getDefaultConfig } = require('expo/metro-config');
+const { createMetroConfiguration } = require('expo-router/metro');
 
-const config = getDefaultConfig(__dirname);
+module.exports = async () => {
+  const config = await createMetroConfiguration(__dirname);
 
-config.transformer = {
-  ...config.transformer,
-  babelTransformerPath: require.resolve('react-native-css-interop/metro'),
+  config.transformer = {
+    ...config.transformer,
+    babelTransformerPath: require.resolve('react-native-css-interop/metro'),
+  };
+
+  return config;
 };
-
-module.exports = config;
