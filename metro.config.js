@@ -1,7 +1,12 @@
-const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
+const { createMetroConfiguration } = require('expo-router/metro');
 
-// eslint-disable-next-line no-undef
-const config = getDefaultConfig(__dirname);
+module.exports = async () => {
+  const config = await createMetroConfiguration(__dirname);
 
-module.exports = withNativeWind(config, { input: './global.css' });
+  config.transformer = {
+    ...config.transformer,
+    babelTransformerPath: require.resolve('react-native-css-interop/metro'),
+  };
+
+  return config;
+};

@@ -21,6 +21,7 @@ const taskService = {
       });
 
       const rawData = response.data;
+      const rawData = response.data;
 
       // Validasi tipe response
       if (!rawData || typeof rawData !== 'object') {
