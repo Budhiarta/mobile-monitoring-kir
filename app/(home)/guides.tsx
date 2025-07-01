@@ -1,42 +1,42 @@
-import { View, Text, ActivityIndicator, Button } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
 import WebView from 'react-native-webview';
-import * as FileSystem from 'expo-file-system';
-import * as IntentLauncher from 'expo-intent-launcher';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function Guides(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showPdf, setShowPdf] = useState<boolean>(false);
 
-  const pdfUrl = 'https://www.pdf995.com/samples/pdf.pdf';
-  const localPdfPath = FileSystem.documentDirectory + 'dummy.pdf';
-
-  // Function to download PDF
-  const downloadPdf = async () => {
-    try {
-      const fileUri = await FileSystem.downloadAsync(pdfUrl, localPdfPath);
-      setError(null);
-      alert('PDF berhasil di-download!');
-    } catch (err) {
-      console.log('Error downloading PDF:', err);
-      setError('Gagal mendownload PDF');
-    }
-  };
+  const pdfUrl = 'https://tan-jaymee-68.tiiny.site';
 
   return (
     <View className="flex-1 bg-gray-100">
+      {/* Header */}
+      <View className="bg-blue-600 p-4">
+        <Text className="text-center text-xl font-bold text-white">Panduan Monitoring</Text>
+      </View>
+
+      {/* Error Message */}
       {error && (
         <View className="flex-1 items-center justify-center bg-red-100">
           <Text className="text-lg font-bold text-red-600">{error}</Text>
         </View>
       )}
 
-      <View className="mt-4 flex-1 items-center justify-center">
-        <Button title="View PDF" onPress={() => setShowPdf(true)} />
-        <Button title="Download PDF" onPress={downloadPdf} color="#007BFF" />
-      </View>
+      {/* Tombol hanya jika belum menampilkan PDF */}
+      {!showPdf && (
+        <View className="flex-1 items-center justify-center">
+          <TouchableOpacity
+            className="flex-row items-center rounded-lg bg-blue-500 px-4 py-2"
+            onPress={() => setShowPdf(true)}>
+            <FontAwesome name="file-pdf-o" size={20} color="white" />
+            <Text className="ml-2 font-medium text-white">Lihat PDF</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
+      {/* WebView untuk menampilkan PDF */}
       {showPdf && !error && (
         <>
           {isLoading && (
